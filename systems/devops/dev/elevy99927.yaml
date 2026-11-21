@@ -41,23 +41,6 @@ spec:
     spec:
       containers:
       - name: elevy99927 #from values
-        image: elevy99927/helloworld:10 #from values
+        image: elevy99927/helloworld:11 #from values
         ports:
         - containerPort: 8000
----
-# Source: spring-music/templates/servicemonitor.yaml
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: elevy99927
-  labels:
-    app: monitoring
-    release: prometheus
-spec:
-  selector:
-    matchLabels:
-      app: elevy99927
-  endpoints:
-    - port: http
-      interval: 30s
-      path: /metrics
