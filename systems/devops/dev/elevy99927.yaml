@@ -41,6 +41,6 @@ spec:
     spec:
       containers:
       - name: elevy99927 #from values
-        image: elevy99927/helloworld:11 #from values
+        image: elevy99927/helloworld:12 #from values
         ports:
         - containerPort: 8000
