@@ -44,7 +44,7 @@ app repo push ─► Jenkins ─► build image  docker.io/<user>/helloworld:<bu
 ```
 
 The Jenkinsfile has parameters `ENV` (dev/qa/prd), `DEPARTMENT` and `SERVICE_MONITOR`.
-Example: [hellow-newapp/Jenkinsfile](https://github.com/elevy99927-demos/hellow-newapp/blob/main/Jenkinsfile).
+Example: [hello-newapp/Jenkinsfile](https://github.com/elevy99927-demos/hello-newapp/blob/main/Jenkinsfile).
 
 ### ApplicationSet
 
