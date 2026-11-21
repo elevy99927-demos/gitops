@@ -8,8 +8,8 @@ spec:
   goTemplateOptions: ["missingkey=error"]
   generators:
     - git:
-        repoURL: https://github.com/elevy99927/argo-demo-repo.git
-        revision: example-4-real-live-example
+        repoURL: https://github.com/elevy99927-demos/gitops.git
+        revision: main
         files:
           - path: "systems/devops/qa/*/*.yaml"
   # For every matched file, e.g. systems/devops/qa/ingress-nginx/ingress.yaml:
@@ -37,8 +37,8 @@ spec:
             valueFiles:
               - $values/{{.path.path}}/{{.path.filename}}
         # 2. Values from the GitOps repo
-        - repoURL: https://github.com/elevy99927/argo-demo-repo.git
-          targetRevision: example-4-real-live-example
+        - repoURL: https://github.com/elevy99927-demos/gitops.git
+          targetRevision: main
           ref: values
       destination:
         server: https://kubernetes.default.svc

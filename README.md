@@ -1,4 +1,4 @@
-# argo-demo-repo
+# gitops
 ## This is a Demo repository for ARGOCD tutorial.
 ## for the full content of this project, please refer to:
 ## [https://github.com/elevy99927/Jenkins-k8s/tree/main/Part4-CICD/04-ArgoCD](https://github.com/elevy99927/Jenkins-k8s/tree/main/Part4-CICD/04-ArgoCD)
@@ -6,7 +6,7 @@
 ---
 ## Example 4: Real-Life Organisation (Git Files Generator + Helm Multi-Source)
 
-Branch: `example-4-real-live-example`
+Branch: `main`
 
 Same mechanics as Example 3: one Helm chart, one values file per app, and every values file in Git
 becomes one Application. The difference is that the folders follow a real organisation:
