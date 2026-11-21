@@ -69,6 +69,27 @@ kubectl -n <department> port-forward svc/<user> 8081:80
 # open http://localhost:8081
 ```
 
+### Monitoring (Helm charts)
+
+```
+monitoring/<env>/<app>.yaml        # Helm values, one file per chart
+
+└── monitoring
+    └── dev
+        ├── prometheus.yaml        # kube-prometheus-stack 84.3.0 (Prometheus, Alertmanager, Grafana)
+        ├── loki.yaml              # loki 7.0.0 (single binary)
+        └── promtail.yaml          # promtail 6.17.1 (pod logs -> Loki)
+```
+
+[ApplicationSet/systems-helm.yaml](ApplicationSet/systems-helm.yaml) lists the three charts and creates
+`monitoring-dev-prometheus`, `monitoring-dev-loki` and `monitoring-dev-promtail` in the `monitoring` namespace.
+To add a chart: add its values file and one element (app, repoURL, chart, version) to the list.
+
+```bash
+kubectl apply -f ApplicationSet/systems-helm.yaml
+kubectl -n monitoring port-forward svc/prometheus-grafana 3000:80    # Grafana: http://localhost:3000
+```
+
 ---
 ## Contact
 

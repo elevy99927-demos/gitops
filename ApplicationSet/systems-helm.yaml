@@ -7,48 +7,62 @@ spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   generators:
-    - git:
-        repoURL: https://github.com/elevy99927-demos/gitops.git
-        revision: main
-        files:
-          # one file = one Application. The lab runs on one kind cluster, so only "dev" is deployed.
-          # For every environment use: systems/*/*/*.yaml
-          - path: "helms/*/dev/*.yaml"
-  # For every matched file, e.g. systems/hr/dev/student07.yaml:
-  #   .path.path     = systems/hr/dev
-  #   .path.segments = [systems, hr, dev]
-  #   .path.filename = student07.yaml
+    # One element = one Helm chart from a public Helm repo.
+    # Its values file lives in this repo: monitoring/<env>/<app>.yaml
+    # The lab runs on one kind cluster, so only "dev" is deployed.
+    - list:
+        elements:
+          # Prometheus Operator + Prometheus + Alertmanager + Grafana (also installs the ServiceMonitor CRDs)
+          - app: prometheus
+            env: dev
+            repoURL: https://prometheus-community.github.io/helm-charts
+            chart: kube-prometheus-stack
+            version: 84.3.0
+          # Loki, single binary, filesystem storage
+          - app: loki
+            env: dev
+            repoURL: https://grafana.github.io/helm-charts
+            chart: loki
+            version: 7.0.0
+          # Promtail: ships pod logs to Loki
+          - app: promtail
+            env: dev
+            repoURL: https://grafana.github.io/helm-charts
+            chart: promtail
+            version: 6.17.1
   template:
     metadata:
-      # hr-dev-student07
-      name: '{{index .path.segments 1}}-{{index .path.segments 2}}-{{.path.filename | trimSuffix ".yaml"}}'
+      # monitoring-dev-prometheus
+      name: 'monitoring-{{.env}}-{{.app}}'
       labels:
-        department: '{{index .path.segments 1}}'
-        env: '{{index .path.segments 2}}'
-        app: '{{.path.filename | trimSuffix ".yaml"}}'
+        department: monitoring
+        env: '{{.env}}'
+        app: '{{.app}}'
     spec:
       project: default
       sources:
         # 1. Chart from the Helm repo
-        - repoURL: https://stefanprodan.github.io/podinfo
-          chart: podinfo
-          targetRevision: 6.5.0
+        - repoURL: '{{.repoURL}}'
+          chart: '{{.chart}}'
+          targetRevision: '{{.version}}'
           helm:
-            releaseName: '{{.path.filename | trimSuffix ".yaml"}}'
+            # release name = app name: Loki's service is "loki" (used by Grafana and Promtail),
+            # and ServiceMonitors with the label "release: prometheus" are picked up
+            releaseName: '{{.app}}'
             valueFiles:
-              - $values/{{.path.path}}/{{.path.filename}}
+              - $values/monitoring/{{.env}}/{{.app}}.yaml
         # 2. Values from the GitOps repo
         - repoURL: https://github.com/elevy99927-demos/gitops.git
           targetRevision: main
           ref: values
       destination:
-        # single-cluster lab. Multi-cluster: name: '{{index .path.segments 2}}'
         server: https://kubernetes.default.svc
-        # one namespace per department
-        namespace: '{{index .path.segments 1}}'
+        namespace: monitoring
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
+          # the Prometheus Operator CRDs are too big for client-side apply (annotation size limit)
+          - ServerSideApply=true
