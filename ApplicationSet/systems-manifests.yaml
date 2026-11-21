@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: systems-manifests
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/elevy99927-demos/gitops.git
+        revision: main
+        files:
+          # one file = one Application: systems/<department>/<env>/<user>.yaml
+          # Each file holds plain Kubernetes manifests: the output of `helm template`, written by Jenkins.
+          # The lab runs on one kind cluster, so only "dev" is deployed.
+          # For every environment use: systems/*/*/*.yaml
+          - path: "systems/*/dev/*.yaml"
+  # For every matched file, e.g. systems/devops/dev/elevy99927.yaml:
+  #   .path.path     = systems/devops/dev
+  #   .path.segments = [systems, devops, dev]
+  #   .path.filename = elevy99927.yaml
+  template:
+    metadata:
+      # devops-dev-elevy99927
+      name: '{{index .path.segments 1}}-{{index .path.segments 2}}-{{.path.filename | trimSuffix ".yaml" | lower}}'
+      labels:
+        department: '{{index .path.segments 1}}'
+        env: '{{index .path.segments 2}}'
+        user: '{{.path.filename | trimSuffix ".yaml" | lower}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/elevy99927-demos/gitops.git
+        targetRevision: main
+        # apply only this user's file from the env folder
+        path: '{{.path.path}}'
+        directory:
+          include: '{{.path.filename}}'
+      destination:
+        # single-cluster lab. Multi-cluster: name: '{{index .path.segments 2}}'
+        server: https://kubernetes.default.svc
+        # one namespace per department (manifests from `helm template` have no namespace)
+        namespace: '{{index .path.segments 1}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

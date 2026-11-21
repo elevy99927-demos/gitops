@@ -4,7 +4,7 @@
 ## [https://github.com/elevy99927/Jenkins-k8s/tree/main/Part4-CICD/04-ArgoCD](https://github.com/elevy99927/Jenkins-k8s/tree/main/Part4-CICD/04-ArgoCD)
 
 ---
-## Class GitOps Structure (Git Files Generator + Helm Multi-Source)
+## Class GitOps Structure (Jenkins `helm template` + Argo CD ApplicationSet)
 
 Branch: `main`
 
@@ -12,7 +12,7 @@ Everything Argo CD deploys lives under `systems/`. The class is split into 4 dep
 each department has 3 environments, and each student owns one file (one application) per environment.
 
 ```
-systems/<department>/<environment>/<student>.yaml
+systems/<department>/<environment>/<user>.yaml
 
 └── systems
     ├── hr
@@ -32,52 +32,40 @@ systems/<department>/<environment>/<student>.yaml
 |-------|---------|---------|
 | `<department>` | team, also the Kubernetes namespace | `hr` |
 | `<environment>` | `dev`, `qa` or `prd` | `dev` |
-| `<student>.yaml` | your application: Helm values for the `html-app` chart | `student07.yaml` |
+| `<user>.yaml` | your application: plain Kubernetes manifests (`helm template` output). `<user>` = your Docker Hub user | `elevy99927.yaml` |
+
+### Flow
+
+```
+app repo push ─► Jenkins ─► build image  docker.io/<user>/helloworld:<build>
+                        └─► helm template <user> ./chart --set image.tag=<build>
+                            ─► commit to systems/<DEPARTMENT>/<ENV>/<user>.yaml
+                               ─► Argo CD (systems-manifests) syncs it to the cluster
+```
+
+The Jenkinsfile has parameters `ENV` (dev/qa/prd), `DEPARTMENT` and `SERVICE_MONITOR`.
+Example: [hellow-newapp/Jenkinsfile](https://github.com/elevy99927-demos/hellow-newapp/blob/main/Jenkinsfile).
 
 ### ApplicationSet
 
-[ApplicationSet/systems-html.yaml](ApplicationSet/systems-html.yaml) turns every
-`systems/*/dev/*.yaml` file into one Application named `<department>-<env>-<student>`
-(for example `hr-dev-student07`), deployed with the [charts/html-app](charts/html-app) Helm chart
-into the department's namespace. The chart runs nginx and serves one HTML page that Helm renders
-from your file. Your name, department and env come from the file path.
+[ApplicationSet/systems-manifests.yaml](ApplicationSet/systems-manifests.yaml) turns every
+`systems/*/dev/*.yaml` file into one Application named `<department>-<env>-<user>`
+(for example `devops-dev-elevy99927`) that applies the manifests in that file
+into the department's namespace. Deleting the file removes the Application and its resources.
 
 The lab runs on one kind cluster, so only `dev` is deployed. For all environments, change the path
 to `systems/*/*/*.yaml`.
 
 ### Onboarding (students)
 
-Add one file, push, and Argo CD creates your Application. Deleting the file removes it.
+1. Fork the app repo and set `def user = "<your-docker-hub-user>"` in the Jenkinsfile.
+2. Run the Jenkins job with your `DEPARTMENT` and `ENV`.
+3. Jenkins commits `systems/<department>/<env>/<user>.yaml`, and Argo CD deploys it.
+
+See your app:
 
 ```bash
-# replace <department> and <your-name>
-touch systems/<department>/dev/<your-name>.yaml
-git add . && git commit -m "add <your-name>" && git push
-```
-
-The file may be empty (default page) or change the page:
-
-```yaml
-replicaCount: 1
-page:
-  message: "Hello from <your-name>"
-  color: "#2e7d32"
-```
-
-Or write your own HTML. It is a Helm template, so you can use values inside it:
-
-```yaml
-html: |
-  <h1>Hi, I'm {{ .Values.app.name }} from {{ .Values.app.department }}</h1>
-  <p>Running {{ .Values.replicaCount }} replica(s) in {{ .Values.app.env }}</p>
-```
-
-All options: [charts/html-app/values.yaml](charts/html-app/values.yaml).
-
-See your page:
-
-```bash
-kubectl -n <department> port-forward svc/<your-name> 8081:80
+kubectl -n <department> port-forward svc/<user> 8081:80
 # open http://localhost:8081
 ```
 
