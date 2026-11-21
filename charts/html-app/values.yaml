@@ -1,0 +1,33 @@
+# Identity. Set by the ApplicationSet from the file path - students don't set these.
+app:
+  name: demo          # <student>     (file name)
+  department: none    # <department>  (folder)
+  env: dev            # <environment> (folder)
+
+# --- Student values: set any of these in systems/<department>/<env>/<student>.yaml ---
+replicaCount: 1
+
+page:
+  title: ""           # default: "<name> | <department> | <env>"
+  message: "Hello from GitOps!"
+  color: "#326ce5"    # background color
+
+# Full custom page. When set it replaces the default page.
+# It is a Helm template too, so you can use {{ .Values.app.name }}, {{ .Values.page.color }} etc.
+html: ""
+
+image:
+  repository: nginxinc/nginx-unprivileged
+  tag: "1.27-alpine"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 16Mi
+  limits:
+    memory: 64Mi

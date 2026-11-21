@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: systems-html
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/elevy99927-demos/gitops.git
+        revision: main
+        files:
+          # one file = one Application: systems/<department>/<env>/<student>.yaml
+          # The lab runs on one kind cluster, so only "dev" is deployed.
+          # For every environment use: systems/*/*/*.yaml (and one namespace per dept+env, see below)
+          - path: "systems/*/dev/*.yaml"
+  # For every matched file, e.g. systems/hr/dev/student07.yaml:
+  #   .path.path     = systems/hr/dev
+  #   .path.segments = [systems, hr, dev]
+  #   .path.filename = student07.yaml
+  template:
+    metadata:
+      # hr-dev-student07
+      name: '{{index .path.segments 1}}-{{index .path.segments 2}}-{{.path.filename | trimSuffix ".yaml" | lower}}'
+      labels:
+        department: '{{index .path.segments 1}}'
+        env: '{{index .path.segments 2}}'
+        student: '{{.path.filename | trimSuffix ".yaml" | lower}}'
+    spec:
+      project: default
+      source:
+        # the html-app chart lives in this repo
+        repoURL: https://github.com/elevy99927-demos/gitops.git
+        targetRevision: main
+        path: charts/html-app
+        helm:
+          releaseName: '{{.path.filename | trimSuffix ".yaml" | lower}}'
+          # the student's file, relative to the chart folder
+          valueFiles:
+            - '../../{{.path.path}}/{{.path.filename}}'
+          # identity comes from the path, so a student can't claim another name or department
+          parameters:
+            - name: app.name
+              value: '{{.path.filename | trimSuffix ".yaml" | lower}}'
+            - name: app.department
+              value: '{{index .path.segments 1}}'
+            - name: app.env
+              value: '{{index .path.segments 2}}'
+      destination:
+        # single-cluster lab. Multi-cluster: name: '{{index .path.segments 2}}'
+        server: https://kubernetes.default.svc
+        # one namespace per department
+        namespace: '{{index .path.segments 1}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

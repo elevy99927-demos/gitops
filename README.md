@@ -32,13 +32,15 @@ systems/<department>/<environment>/<student>.yaml
 |-------|---------|---------|
 | `<department>` | team, also the Kubernetes namespace | `hr` |
 | `<environment>` | `dev`, `qa` or `prd` | `dev` |
-| `<student>.yaml` | your application: Helm values for the podinfo chart | `student07.yaml` |
+| `<student>.yaml` | your application: Helm values for the `html-app` chart | `student07.yaml` |
 
 ### ApplicationSet
 
-[ApplicationSet/systems-helm.yaml](ApplicationSet/systems-helm.yaml) turns every
+[ApplicationSet/systems-html.yaml](ApplicationSet/systems-html.yaml) turns every
 `systems/*/dev/*.yaml` file into one Application named `<department>-<env>-<student>`
-(for example `hr-dev-student07`), deployed with the podinfo chart into the department's namespace.
+(for example `hr-dev-student07`), deployed with the [charts/html-app](charts/html-app) Helm chart
+into the department's namespace. The chart runs nginx and serves one HTML page that Helm renders
+from your file. Your name, department and env come from the file path.
 
 The lab runs on one kind cluster, so only `dev` is deployed. For all environments, change the path
 to `systems/*/*/*.yaml`.
@@ -53,13 +55,30 @@ touch systems/<department>/dev/<your-name>.yaml
 git add . && git commit -m "add <your-name>" && git push
 ```
 
-The file may be empty (chart defaults) or set podinfo values, for example:
+The file may be empty (default page) or change the page:
 
 ```yaml
 replicaCount: 1
-ui:
+page:
+  message: "Hello from <your-name>"
   color: "#2e7d32"
-  message: "<your-name> | <department> | dev"
+```
+
+Or write your own HTML. It is a Helm template, so you can use values inside it:
+
+```yaml
+html: |
+  <h1>Hi, I'm {{ .Values.app.name }} from {{ .Values.app.department }}</h1>
+  <p>Running {{ .Values.replicaCount }} replica(s) in {{ .Values.app.env }}</p>
+```
+
+All options: [charts/html-app/values.yaml](charts/html-app/values.yaml).
+
+See your page:
+
+```bash
+kubectl -n <department> port-forward svc/<your-name> 8081:80
+# open http://localhost:8081
 ```
 
 ---

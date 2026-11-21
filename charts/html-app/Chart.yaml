@@ -1,0 +1,6 @@
+apiVersion: v2
+name: html-app
+description: Serves one HTML page (nginx). The page is rendered by Helm from the student's values file.
+type: application
+version: 0.1.0
+appVersion: "1.27"
