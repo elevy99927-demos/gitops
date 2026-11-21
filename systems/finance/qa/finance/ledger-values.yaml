@@ -1,4 +1,0 @@
-replicaCount: 2
-ui:
-  color: "#1565c0"
-  message: "ledger | finance | qa | finance"

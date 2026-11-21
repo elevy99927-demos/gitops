@@ -4,86 +4,63 @@
 ## [https://github.com/elevy99927/Jenkins-k8s/tree/main/Part4-CICD/04-ArgoCD](https://github.com/elevy99927/Jenkins-k8s/tree/main/Part4-CICD/04-ArgoCD)
 
 ---
-## Example 4: Real-Life Organisation (Git Files Generator + Helm Multi-Source)
+## Class GitOps Structure (Git Files Generator + Helm Multi-Source)
 
 Branch: `main`
 
-Same mechanics as Example 3: one Helm chart, one values file per app, and every values file in Git
-becomes one Application. The difference is that the folders follow a real organisation:
-five business units, each owning its own apps and namespaces.
-
-| Business unit | Namespace(s) | Apps |
-|---------------|--------------|------|
-| `hr` | `hr` | `payroll`, `recruiting` |
-| `finance` | `finance` | `invoicing`, `ledger` |
-| `legal` | `legal` | `contracts` |
-| `digital-ui` | `web` | `storefront`, `customer-portal` |
-| `digital-backend` | `api`, `payments` | `orders-api`, `customers-api`, `payments-api` |
+Everything Argo CD deploys lives under `systems/`. The class is split into 4 departments;
+each department has 3 environments, and each student owns one file (one application) per environment.
 
 ```
-systems/<business-unit>/<cluster>/<namespace>/<app>-values.yaml
+systems/<department>/<environment>/<student>.yaml
 
 └── systems
     ├── hr
     │   └── dev | qa | prd
-    │       └── hr
-    │           ├── payroll-values.yaml
-    │           └── recruiting-values.yaml
     ├── finance
     │   └── dev | qa | prd
-    │       └── finance
-    │           ├── invoicing-values.yaml
-    │           └── ledger-values.yaml
     ├── legal
     │   └── dev | qa | prd
-    │       └── legal
-    │           └── contracts-values.yaml
-    ├── digital-ui
+    ├── digital
     │   └── dev | qa | prd
-    │       └── web
-    │           ├── storefront-values.yaml
-    │           └── customer-portal-values.yaml
-    ├── digital-backend
-    │   └── dev | qa | prd
-    │       ├── api
-    │       │   ├── orders-api-values.yaml
-    │       │   └── customers-api-values.yaml
-    │       └── payments
-    │           └── payments-api-values.yaml
-    └── devops
-        └── dev | qa | prd
-            └── ingress-nginx
-                └── ingress.yaml
+    └── devops                  # instructor
+        └── dev
+            └── elevy99927.yaml
 ```
 
-10 apps × 3 clusters = 30 Applications from one ApplicationSet. Each values file is four lines;
-`ui.color` is the business unit's color, so each podinfo UI shows which unit it belongs to:
+| Level | Meaning | Example |
+|-------|---------|---------|
+| `<department>` | team, also the Kubernetes namespace | `hr` |
+| `<environment>` | `dev`, `qa` or `prd` | `dev` |
+| `<student>.yaml` | your application: Helm values for the podinfo chart | `student07.yaml` |
+
+### ApplicationSet
+
+[ApplicationSet/systems-helm.yaml](ApplicationSet/systems-helm.yaml) turns every
+`systems/*/dev/*.yaml` file into one Application named `<department>-<env>-<student>`
+(for example `hr-dev-student07`), deployed with the podinfo chart into the department's namespace.
+
+The lab runs on one kind cluster, so only `dev` is deployed. For all environments, change the path
+to `systems/*/*/*.yaml`.
+
+### Onboarding (students)
+
+Add one file, push, and Argo CD creates your Application. Deleting the file removes it.
+
+```bash
+# replace <department> and <your-name>
+touch systems/<department>/dev/<your-name>.yaml
+git add . && git commit -m "add <your-name>" && git push
+```
+
+The file may be empty (chart defaults) or set podinfo values, for example:
 
 ```yaml
 replicaCount: 1
 ui:
   color: "#2e7d32"
-  message: "payroll | hr | dev | hr"
+  message: "<your-name> | <department> | dev"
 ```
-
-| Cluster | replicaCount |
-|---------|--------------|
-| dev | 1 |
-| qa  | 2 |
-| prd | 3 |
-
-### ApplicationSets
-
-- [ApplicationSet/systems-helm.yaml](ApplicationSet/systems-helm.yaml): business-unit apps (podinfo chart).
-  Generates `hr-qa-hr-payroll`, `digital-backend-qa-payments-payments-api`, ...
-- [ApplicationSet/infra-helm.yaml](ApplicationSet/infra-helm.yaml): DevOps infra (ingress-nginx chart).
-
-Both match only `qa` (`systems/*/qa/*/*-values.yaml`) because the lab runs on one kind cluster.
-For all clusters, change the path to `systems/*/*/*/*-values.yaml` and the destination to
-`name: '{{index .path.segments 2}}'` (cluster folder name == cluster name registered in ArgoCD).
-
-Onboarding a new app is one file: add `systems/<unit>/<cluster>/<namespace>/<app>-values.yaml`,
-push, and ArgoCD creates the Application. Deleting the file removes it.
 
 ---
 ## Contact

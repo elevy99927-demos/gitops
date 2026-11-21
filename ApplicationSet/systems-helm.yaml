@@ -11,19 +11,21 @@ spec:
         repoURL: https://github.com/elevy99927-demos/gitops.git
         revision: main
         files:
-          - path: "systems/*/qa/*/*-values.yaml"
-  # For every matched file:
-  #   .path.path     = systems/hr/qa/hr
-  #   .path.segments = [systems, hr, qa, hr]
-  #   .path.filename = payroll-values.yaml
+          # one file = one Application. The lab runs on one kind cluster, so only "dev" is deployed.
+          # For every environment use: systems/*/*/*.yaml
+          - path: "systems/*/dev/*.yaml"
+  # For every matched file, e.g. systems/hr/dev/student07.yaml:
+  #   .path.path     = systems/hr/dev
+  #   .path.segments = [systems, hr, dev]
+  #   .path.filename = student07.yaml
   template:
     metadata:
-      # hr-qa-hr-payroll
-      name: '{{index .path.segments 1}}-{{index .path.segments 2}}-{{index .path.segments 3}}-{{.path.filename | trimSuffix "-values.yaml"}}'
+      # hr-dev-student07
+      name: '{{index .path.segments 1}}-{{index .path.segments 2}}-{{.path.filename | trimSuffix ".yaml"}}'
       labels:
-        team: '{{index .path.segments 1}}'
-        cluster: '{{index .path.segments 2}}'
-        app: '{{.path.filename | trimSuffix "-values.yaml"}}'
+        department: '{{index .path.segments 1}}'
+        env: '{{index .path.segments 2}}'
+        app: '{{.path.filename | trimSuffix ".yaml"}}'
     spec:
       project: default
       sources:
@@ -32,7 +34,7 @@ spec:
           chart: podinfo
           targetRevision: 6.5.0
           helm:
-            releaseName: '{{.path.filename | trimSuffix "-values.yaml"}}'
+            releaseName: '{{.path.filename | trimSuffix ".yaml"}}'
             valueFiles:
               - $values/{{.path.path}}/{{.path.filename}}
         # 2. Values from the GitOps repo
@@ -40,11 +42,10 @@ spec:
           targetRevision: main
           ref: values
       destination:
-        # cluster folder name == cluster name registered in ArgoCD
-        # (argocd cluster add <kube-context> --name dev)
-        # single-cluster lab: replace with  server: https://kubernetes.default.svc
+        # single-cluster lab. Multi-cluster: name: '{{index .path.segments 2}}'
         server: https://kubernetes.default.svc
-        namespace: '{{index .path.segments 3}}'
+        # one namespace per department
+        namespace: '{{index .path.segments 1}}'
       syncPolicy:
         automated:
           prune: true

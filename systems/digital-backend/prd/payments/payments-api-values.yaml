@@ -1,4 +1,0 @@
-replicaCount: 3
-ui:
-  color: "#c62828"
-  message: "payments-api | digital-backend | prd | payments"

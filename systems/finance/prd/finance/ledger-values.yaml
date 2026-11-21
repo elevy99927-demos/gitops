@@ -1,4 +1,0 @@
-replicaCount: 3
-ui:
-  color: "#1565c0"
-  message: "ledger | finance | prd | finance"

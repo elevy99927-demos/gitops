@@ -1,4 +1,0 @@
-replicaCount: 2
-ui:
-  color: "#2e7d32"
-  message: "payroll | hr | qa | hr"
