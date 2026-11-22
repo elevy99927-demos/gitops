@@ -1,0 +1,46 @@
+---
+# Source: spring-music/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recruithub-cm
+data:
+  dbname: "DB_MYSQL"
+  dbtable: music
+  k8s: v1.31.0
+---
+# Source: spring-music/templates/service.yaml
+kind: Service     
+apiVersion: v1     
+metadata:
+  name: recruithub #from RELEASE NAME
+spec:
+  selector:
+    app: recruithub    
+  type: NodePort  #from values
+  ports:         
+  - name: http   
+    protocol: TCP
+    port: 80 #from Values
+    targetPort: 8000  #from values
+---
+# Source: spring-music/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recruithub
+spec:
+  selector: 
+    matchLabels:
+      app: recruithub
+  replicas: 1   #from values
+  template:
+    metadata:
+      labels:
+        app: recruithub
+    spec:
+      containers:
+      - name: recruithub #from values
+        image: hillel456/recruithub:5 #from values
+        ports:
+        - containerPort: 8000
