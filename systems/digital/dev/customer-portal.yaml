@@ -41,23 +41,6 @@ spec:
     spec:
       containers:
       - name: customer-portal #from values
-        image: dsohar/customer-portal:21 #from values
+        image: dsohar/customer-portal:22 #from values
         ports:
         - containerPort: 8000
----
-# Source: spring-music/templates/servicemonitor.yaml
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: customer-portal
-  labels:
-    app: monitoring
-    release: prometheus
-spec:
-  selector:
-    matchLabels:
-      app: customer-portal
-  endpoints:
-    - port: http
-      interval: 30s
-      path: /metrics
