@@ -1,0 +1,46 @@
+---
+# Source: spring-music/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: moshebittan-cm
+data:
+  dbname: "DB_MYSQL"
+  dbtable: music
+  k8s: v1.31.0
+---
+# Source: spring-music/templates/service.yaml
+kind: Service     
+apiVersion: v1     
+metadata:
+  name: moshebittan #from RELEASE NAME
+spec:
+  selector:
+    app: moshebittan    
+  type: NodePort  #from values
+  ports:         
+  - name: http   
+    protocol: TCP
+    port: 80 #from Values
+    targetPort: 8000  #from values
+---
+# Source: spring-music/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moshebittan
+spec:
+  selector: 
+    matchLabels:
+      app: moshebittan
+  replicas: 1   #from values
+  template:
+    metadata:
+      labels:
+        app: moshebittan
+    spec:
+      containers:
+      - name: moshebittan #from values
+        image: moshebittan/notifycenter:16 #from values
+        ports:
+        - containerPort: 8000
