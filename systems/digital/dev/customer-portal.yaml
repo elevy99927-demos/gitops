@@ -41,6 +41,6 @@ spec:
     spec:
       containers:
       - name: customer-portal #from values
-        image: dsohar/customer-portal:12 #from values
+        image: dsohar/customer-portal:13 #from values
         ports:
         - containerPort: 8000
