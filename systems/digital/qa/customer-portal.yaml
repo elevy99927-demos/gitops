@@ -44,4 +44,3 @@ spec:
         image: dsohar/customer-portal:21 #from values
         ports:
         - containerPort: 8000
----
