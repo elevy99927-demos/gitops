@@ -1,4 +1,4 @@
-# Default values for kube-prometheus-stack.
+# Default values for kube-prometheus-stelevyack.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -1522,7 +1522,7 @@ grafana:
     - name: git-sync
       image: registry.k8s.io/git-sync/git-sync:v4.4.0
       args:
-        - --repo=https://github.com/elevy99927/argo-demo-repo.git
+        - --repo=https://github.com/elevy99927-demos/gitops.git
         - --branch=application
         - --root=/dashboards
         - --one-time
