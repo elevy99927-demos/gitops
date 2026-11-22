@@ -1,0 +1,48 @@
+---
+# Source: spring-music/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aidentale2-cm
+data:
+  dbname: "DB_MYSQL"
+  dbtable: music
+  k8s: v1.31.0
+---
+# Source: spring-music/templates/service.yaml
+kind: Service     
+apiVersion: v1     
+metadata:
+  name: aidentale2 #from RELEASE NAME
+  labels:
+    app: aidentale2
+spec:
+  selector:
+    app: aidentale2    
+  type: NodePort  #from values
+  ports:         
+  - name: http   
+    protocol: TCP
+    port: 80 #from Values
+    targetPort: 8000  #from values
+---
+# Source: spring-music/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aidentale2
+spec:
+  selector: 
+    matchLabels:
+      app: aidentale2
+  replicas: 1   #from values
+  template:
+    metadata:
+      labels:
+        app: aidentale2
+    spec:
+      containers:
+      - name: aidentale2 #from values
+        image: aidentale2/taxcalc:9 #from values
+        ports:
+        - containerPort: 8000
