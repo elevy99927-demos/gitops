@@ -43,6 +43,6 @@ spec:
     spec:
       containers:
       - name: sbaransi #from values
-        image: sbaransi/payrollcalc:2 #from values
+        image: sbaransi/payrollcalc:4 #from values
         ports:
         - containerPort: 8000
