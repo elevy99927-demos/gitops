@@ -1601,8 +1601,8 @@ grafana:
   ##
   service:
     portName: http-web
-    type: NodePort
-    nodePort: 32004
+    type: LoadBalancer
+    #nodePort: 32004
     ipFamilies: []
     ipFamilyPolicy: ""
 
