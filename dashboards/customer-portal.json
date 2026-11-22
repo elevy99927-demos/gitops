@@ -250,7 +250,7 @@
   "time": { "from": "now-1h", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
-  "title": "digital-customer-portal",
+  "title": "Digital: Customer Portal",
   "uid": "digital-customer-portal",
   "version": 1
 }
