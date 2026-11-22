@@ -41,6 +41,23 @@ spec:
     spec:
       containers:
       - name: recruithub #from values
-        image: hillel456/recruithub:5 #from values
+        image: hillel456/recruithub:6 #from values
         ports:
         - containerPort: 8000
+---
+# Source: spring-music/templates/servicemonitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: recruithub
+  labels:
+    app: monitoring
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: recruithub
+  endpoints:
+    - port: http
+      interval: 30s
+      path: /metrics
