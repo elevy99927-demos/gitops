@@ -41,6 +41,6 @@ spec:
     spec:
       containers:
       - name: vshalom #from values
-        image: vshalom/onboardflow:4 #from values
+        image: vshalom/onboardflow:5 #from values
         ports:
         - containerPort: 8000
