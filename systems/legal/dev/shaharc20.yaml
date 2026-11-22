@@ -43,7 +43,7 @@ spec:
     spec:
       containers:
       - name: paymentgateway #from values
-        image: shaharc20/paymentgateway:10 #from values
+        image: shaharc20/paymentgateway:11 #from values
         ports:
         - containerPort: 8000
 ---
