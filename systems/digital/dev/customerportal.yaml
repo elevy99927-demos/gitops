@@ -1,0 +1,46 @@
+---
+# Source: spring-music/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dsohar-cm
+data:
+  dbname: "DB_MYSQL"
+  dbtable: music
+  k8s: v1.31.0
+---
+# Source: spring-music/templates/service.yaml
+kind: Service     
+apiVersion: v1     
+metadata:
+  name: dsohar #from RELEASE NAME
+spec:
+  selector:
+    app: dsohar    
+  type: NodePort  #from values
+  ports:         
+  - name: http   
+    protocol: TCP
+    port: 80 #from Values
+    targetPort: 8000  #from values
+---
+# Source: spring-music/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dsohar
+spec:
+  selector: 
+    matchLabels:
+      app: dsohar
+  replicas: 1   #from values
+  template:
+    metadata:
+      labels:
+        app: dsohar
+    spec:
+      containers:
+      - name: dsohar #from values
+        image: dsohar/customerportal:9 #from values
+        ports:
+        - containerPort: 8000
