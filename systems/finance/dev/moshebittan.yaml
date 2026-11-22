@@ -41,6 +41,6 @@ spec:
     spec:
       containers:
       - name: moshebittan #from values
-        image: moshebittan/notifycenter:21 #from values
+        image: moshebittan/notifycenter:22 #from values
         ports:
         - containerPort: 8000
