@@ -14,6 +14,8 @@ kind: Service
 apiVersion: v1     
 metadata:
   name: aidentale2 #from RELEASE NAME
+  labels:
+    app: aidentale2
 spec:
   selector:
     app: aidentale2    
@@ -41,6 +43,6 @@ spec:
     spec:
       containers:
       - name: aidentale2 #from values
-        image: aidentale2/taxcalc:8 #from values
+        image: aidentale2/taxcalc:11 #from values
         ports:
         - containerPort: 8000
