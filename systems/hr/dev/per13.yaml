@@ -1,0 +1,48 @@
+---
+# Source: spring-music/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: per13-cm
+data:
+  dbname: "DB_MYSQL"
+  dbtable: music
+  k8s: v1.31.0
+---
+# Source: spring-music/templates/service.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: per13 #from RELEASE NAME
+  labels:
+    app: per13
+spec:
+  selector:
+    app: per13    
+  type: NodePort  #from values
+  ports:         
+  - name: http   
+    protocol: TCP
+    port: 80 #from Values
+    targetPort: 8000  #from values
+---
+# Source: spring-music/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: per13
+spec:
+  selector: 
+    matchLabels:
+      app: per13
+  replicas: 1   #from values
+  template:
+    metadata:
+      labels:
+        app: per13
+    spec:
+      containers:
+      - name: per13 #from values
+        image: per13/leavetracker:1 #from values
+        ports:
+        - containerPort: 8000
